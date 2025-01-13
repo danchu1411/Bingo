@@ -95,7 +95,8 @@ function doGet() {
 function extractAllDataFromSheet() {
   var spreadsheet = SpreadsheetApp.openById(SHEET_ID);
   var sheet = spreadsheet.getSheetByName("Sheet1");
-  var values = sheet.getRange("A:A").getValues();
+  
+  var values = sheet.getRange(1, 1, sheet.getLastRow(), 1).getValues();
   const result = [];
 
   values.forEach(value => {

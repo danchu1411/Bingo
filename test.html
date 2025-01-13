@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bingo Card</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f8f9fa;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+        }
+
+        .bingo-card {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            grid-template-rows: repeat(5, 1fr);
+            gap: 5px;
+            width: 300px;
+            height: 300px;
+            background-color: #fff;
+            border: 2px solid #333;
+            border-radius: 8px;
+            padding: 10px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+        }
+
+        .cell {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background-color: #e9ecef;
+            border: 1px solid #dee2e6;
+            font-size: 1.2rem;
+            font-weight: bold;
+            color: #333;
+            text-transform: uppercase;
+            border-radius: 4px;
+        }
+
+        .cell.free {
+            background-color: #6c757d;
+            color: #fff;
+        }
+    </style>
+</head>
+<body>
+    <div class="bingo-card">
+        <div class="cell">B</div>
+        <div class="cell">I</div>
+        <div class="cell">N</div>
+        <div class="cell">G</div>
+        <div class="cell">O</div>
+        <div class="cell">12</div>
+        <div class="cell">18</div>
+        <div class="cell">20</div>
+        <div class="cell">24</div>
+        <div class="cell">30</div>
+        <div class="cell">5</div>
+        <div class="cell">10</div>
+        <div class="cell free">Free</div>
+        <div class="cell">22</div>
+        <div class="cell">27</div>
+        <div class="cell">3</div>
+        <div class="cell">9</div>
+        <div class="cell">14</div>
+        <div class="cell">19</div>
+        <div class="cell">28</div>
+        <div class="cell">7</div>
+        <div class="cell">11</div>
+        <div class="cell">16</div>
+        <div class="cell">21</div>
+        <div class="cell">26</div>
+    </div>
+</body>
+</html>
