@@ -248,9 +248,13 @@
     <div id="bingo-container"></div>
 
     <script>
-
+        
         let recentTables = [];
+        let boardData = [];
 
+        /**
+         * Import sheet
+         */
         function onImportSheet () {
                 google.script.run.withSuccessHandler(onSuccess).extractAllDataFromSheet();
                 document.querySelector('.option-overlay').classList.add('hide');
@@ -258,11 +262,19 @@
                 document.getElementById('board-input-container').classList.add('hide');
         }
 
+        /**
+         * Import image
+         */
         function onImportImage  () {
             document.querySelector('.option-overlay').classList.add('hide');
             document.getElementById('board-input-container').classList.remove('hide');
         }
 
+        /**
+         * Convert array to 2D array
+         * @param {Array} arr 
+         * @returns {Array}
+         */
         function convertToTwoDimensionalArray(arr) {
             let result = []; 
             for (let i = 0; i < 5; i++) { 
@@ -271,8 +283,10 @@
             return result;
         }
 
-        let boardsArr = [];
-
+        /**
+         * Get recent bingo boards
+         * @param {Array} result 
+         */
         function onSuccess(result) {
             recentTables = result;
             recentTables.forEach((table) => {
@@ -281,30 +295,73 @@
             document.querySelector('.loading-overlay').classList.add('hide');
         }
 
+        /**
+         * Add bingo board to screen
+         * @param {Array} tableNumbers 
+         */
         function addBoardToScreen(tableNumbers) {
             const bingoCard = document.createElement('div');
             bingoCard.classList.add('bingo-card');
             const bingoContainer = document.getElementById('bingo-container');
 
+            // Initialize board data
+            let positions = {};               
+            let rowMarks = [0, 0, 0, 0, 0];    
+            let colMarks = [0, 0, 0, 0, 0];   
+            let diag1Marks = 0;               
+            let diag2Marks = 0;              
+            let hasBingo = false;             
+            const size = 5; 
+
+            // Create cells
             for(let i = 0; i < tableNumbers.length; i++) {
                 for(let j = 0; j < tableNumbers[i].length; j++) {
                     const cell = document.createElement('div');
                     cell.classList.add('cell');
-                    if (i === 2 && j === 2) {
+
+                    let val = tableNumbers[i][j];
+                    if (i === 2 && j === 2) { // Center cell
                         cell.classList.add('free');
                         cell.textContent = 'Free';
+                        tableNumbers[i][j] = 'X';
+                        val = 'X';
+
+                        rowMarks[i]++;
+                        colMarks[j]++;
+                        if (i === j) {
+                            diag1Marks++;
+                        }
+                        if (i + j === size - 1) {
+                            diag2Marks++;
+                        }
                     }
-                    else {
-                        cell.textContent = tableNumbers[i][j];
+                    else { 
+                        cell.textContent = val;
                     }
-                    
+                    if (val !== 'X') {
+                        positions[val] = { row: i, col: j };
+                    }
                     bingoCard.appendChild(cell);
                 }
             }
+
+            boardData.push({
+                positions,
+                rowMarks,
+                colMarks,
+                diag1Marks,
+                diag2Marks,
+                hasBingo,
+            });
+            
             bingoContainer.appendChild(bingoCard);
         }
 
-        function draw () {
+
+        /**
+         * Draw number and check bingo for each board
+         */
+        function draw() {
             const number = document.getElementById('number').value.trim();
 
             if (number === '') {
@@ -316,79 +373,97 @@
                 return;
             }
 
-            recentTables.forEach((table, index) => {
-                for (let i = 0; i < table.length; i++) {
-                    for (let j = 0; j < table[i].length; j++) {
-                        if (table[i][j] == number) {
-                            table[i][j] = 'X';
-                            highlightCell((i * 5 + j), index);
-                            
-                        } 
-                    }
+            let anyBoardBingo = false;
+
+            boardData.forEach((table, tableIndex) => {
+                if(table.hasBingo) {
+                    return;
+                }
+
+                if(!table.positions.hasOwnProperty(number)) {
+                    return;
+                }
+
+                const { row, col } = table.positions[number];
+                recentTables[tableIndex][row][col] = 'X';
+
+                table.rowMarks[row]++;
+                table.colMarks[col]++;
+                if(row === col) {
+                    table.diag1Marks++;
+                }
+                if(row + col === 4) {
+                    table.diag2Marks++;
+                }
+
+                highlightCell(row, col, tableIndex);
+
+                if(table.rowMarks[row] === 5 || table.colMarks[col] === 5 || table.diag1Marks === 5 || table.diag2Marks === 5) {
+                    table.hasBingo = true;
+                    anyBoardBingo = true;
+                    highlightBingo(tableIndex, row, col, table);
                 }
             });
-        };
 
-        const highlightCell = (cellIndex, boardIndex) => {
+            if (anyBoardBingo) {
+                alert('Bingo!');
+            }
+        }
+
+
+        /**
+         * Highlight cell
+         * @param {number} row 
+         * @param {number} col 
+         * @param {number} boardIndex 
+         */
+        function highlightCell(row, col, boardIndex) {
             const board = document.querySelectorAll('.bingo-card')[boardIndex];
-            board.querySelectorAll('.cell')[cellIndex].style.backgroundColor = 'yellow';
+            const cellIndex = row * 5 + col;
+            const cell = board.querySelectorAll('.cell')[cellIndex];
+            cell.style.backgroundColor = 'yellow';
         }
 
-        function checkBingo() {
-            recentTables.forEach((table) => {
-                const cells = document.querySelectorAll('.bingo-card .cell');
-                let isBingo = false;
-                let bingoRowIndex = -1;
-                // Check row
-                for (let i = 0; i < table.length; i++) {
-                    if (table[i].every(cell => cell === 'X')) {
-                        isBingo = true;
-                        bingoRowIndex = i;
-                        break;
-                    } else
-                    {
-                        isBingo = false;
-                    }
-                }
 
-                if (isBingo) {
-                    alert('Bingo!');
-                    for (let j = 0; j < table[bingoRowIndex].length; j++) {
-                        const cellIndex = bingoRowIndex * 5 + j;
-                        cells[cellIndex].style.backgroundColor = 'green';
-                    }
+        /**
+         * Highlight bingo
+         * @param {number} boardIndex 
+         * @param {number} row 
+         * @param {number} col 
+         * @param {Object} bData 
+         */
+        function highlightBingo(boardIndex, row, col, bData) {
+            const board = document.querySelectorAll('.bingo-card')[boardIndex];
+            // If row is complete
+            if (bData.rowMarks[row] === 5) {
+                for (let j = 0; j < 5; j++) {
+                    board.querySelectorAll('.cell')[row * 5 + j].style.backgroundColor = 'green';
                 }
-
-
-                // Check column
-                for (let j = 0; j < table[0].length; j++) {
-                    let isBingo = true;
-                    for (let i = 0; i < table.length; i++) {
-                        if (table[i][j] !== 'X') {
-                            isBingo = false;
-                            break;
-                        }
-                    }
-                    if (isBingo) {
-                        alert('Bingo!');
-                        for (let i = 0; i < table.length; i++) {
-                            const cellIndex = i * 5 + j;
-                            cells[cellIndex].style.backgroundColor = 'green';
-                        }
-                    }
+            }
+            // If col is complete
+            if (bData.colMarks[col] === 5) {
+                for (let i = 0; i < 5; i++) {
+                    board.querySelectorAll('.cell')[i * 5 + col].style.backgroundColor = 'green';
                 }
-
-                // Check diagonal
-                if (table[0][0] === 'X' && table[1][1] === 'X' && table[2][2] === 'X' && table[3][3] === 'X' && table[4][4] === 'X') {
-                    alert('Bingo!');
-                    for (let i = 0; i < table.length; i++) {
-                        const cellIndex = i * 5 + i;
-                        cells[cellIndex].style.backgroundColor = 'green';
-                    }
+            }
+            // If main diagonal is complete
+            if (bData.diag1Marks === 5) {
+                for (let i = 0; i < 5; i++) {
+                    board.querySelectorAll('.cell')[i * 5 + i].style.backgroundColor = 'green';
                 }
-            });
+            }
+            // If anti-diagonal is complete
+            if (bData.diag2Marks === 5) {
+                for (let i = 0; i < 5; i++) {
+                    board.querySelectorAll('.cell')[i * 5 + (4 - i)].style.backgroundColor = 'green';
+                }
+            }
         }
 
+
+        /**
+         * Submit image
+         */
         function onSubmit () {
             document.querySelector('.loading-overlay').classList.remove('hide');
             const fileInput = document.getElementById('file-input');
@@ -418,6 +493,7 @@
         }
 
         function onGenerate(result) {
+            recentTables.push(result);
             result.forEach(board => {
                 addBoardToScreen(board); 
             })

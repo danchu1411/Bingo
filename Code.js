@@ -1,14 +1,26 @@
-const properties = PropertiesService.getScriptProperties();
+// Description: This code is used to send the image to the Gemini API and get the result from the API.
+const properties = PropertiesService.getScriptProperties(); 
 
+// Please set the API_KEY and SHEET_ID in the PropertiesService.
 const API_KEY = properties.getProperty("API_KEY");
 const SHEET_ID = properties.getProperty("SHEET_ID");
 const GEMINI_URL = "https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=" + API_KEY;
 
+/**
+ * Convert image url to base64 string
+ * @param {string} imgUrl 
+ * @returns {string} base64String
+ */
 function convertImgUrlToBase64(imgUrl) {
   const imageBlob = UrlFetchApp.fetch(imgUrl).getBlob();
   return Utilities.base64Encode(imageBlob.getBytes());
 }
 
+/**
+ * Convert one-dimensional array to two-dimensional array
+ * @param {array} arr 
+ * @returns {array} result
+ */
 function convertToTwoDimensionalArray(arr) {
   let result = []; 
   for (let i = 0; i < 5; i++) { 
@@ -17,6 +29,11 @@ function convertToTwoDimensionalArray(arr) {
   return result;
 }
 
+/**
+ * Extract arrays from string
+ * @param {string} text 
+ * @returns {array} arrays
+ */
 function extractArraysFromString(text) {
   const arrays = [];
   let currentIndex = 0;
@@ -39,6 +56,11 @@ function extractArraysFromString(text) {
   return arrays;
 };
 
+/**
+ * Send image to Gemini API by base64 string
+ * @param {array} blobArr 
+ * @returns {array} result
+ */
 function sendToGeminiByBase64(blobArr) {
   const payload = {
     "contents": [
@@ -83,15 +105,30 @@ function sendToGeminiByBase64(blobArr) {
   }
 }
 
+
+/**
+ * Send image to Gemini API by image url
+ * @param {string} imgUrl 
+ * @returns {array} result
+ */
 function sendToGeminByUrl(imgUrl) {
   var base64Image = convertImgUrlToBase64(imgUrl); 
   return sendToGeminiByBase64([{base64String: base64Image, type: "image/jpeg"}]);
 }
 
+/**
+ *  doGet function
+ * @returns {array} result
+ */
 function doGet() {
   return HtmlService.createHtmlOutputFromFile('Index');
 }
 
+
+/**
+ * extract all data from the sheet
+ * @returns {array} result
+ */
 function extractAllDataFromSheet() {
   var spreadsheet = SpreadsheetApp.openById(SHEET_ID);
   var sheet = spreadsheet.getSheetByName("Sheet1");
@@ -117,6 +154,12 @@ function extractAllDataFromSheet() {
   return result;
 }
 
+
+/**
+ * Check duplicate number in the array
+ * @param {boolean}} isDuplicated 
+ * @returns 
+ */
 function checkDuplicateNumber(arr){
   let seen = new Set();
   for(let i = 0; i < arr.length; i++) {
