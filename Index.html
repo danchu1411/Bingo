@@ -1,0 +1,367 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bingo</title>
+    <base target="_top">
+    <style>
+        p {
+            color: black;
+        }
+        h1 {
+            text-align: center;
+            font-size: 50px;
+            
+        }
+
+        table {
+            border-collapse: collapse;
+            width: 35%;
+            margin: 20px auto;
+        }
+        th, td {
+            border: 1px solid black;
+            padding: 8px;
+            text-align: center;
+            width: 20%; 
+            height: 50px;
+        }
+        
+        #bingo-container{
+            display: flex;
+            justify-content: space-around;
+            flex-direction: row;
+            flex-wrap: wrap;
+        }
+
+        #number-input-container {
+        display: flex;
+        justify-content: center;
+        margin-top: 20px;
+        margin-bottom: 25px;
+        }
+
+        #number-input-container input {
+            padding: 10px;
+            font-size: 16px;
+            width: 250px;
+            margin-right: 10px;
+        }
+
+        #number-input-container button {
+            padding: 10px;
+            font-size: 16px;
+            cursor: pointer;
+        }
+
+        .option-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background-color: rgba(0, 0, 0, 0.5);
+            color: white;
+            flex-direction: column;
+        }
+
+        .option-overlay.hide {
+            display: none;
+        }
+
+        .option-overlay > div {
+            width: 50%;
+            height: 50%;
+            background-color: white;
+            padding: 20px;
+            border-radius: 10px;
+        }
+
+        h2 {
+            color: black;
+            text-align: center;
+        }
+
+        .btn-container {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 20px;
+            height: 70%;
+        }
+
+        .btn-container > div > button {
+            padding: 10px;
+            font-size: 16px;
+            cursor: pointer;
+        }
+
+        .btn-container > div {
+            width: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+
+        #board-input-container.hide {
+            display: none;
+        }
+
+        #board-input-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+            margin-top: 20px;
+        }
+
+        #board-input-container div:nth-child(2) input {
+            margin-bottom: 20px;
+        }
+
+        #file-input {
+            margin-bottom: 20px;
+        }
+
+        .loading-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background-color: rgba(0, 0, 0, 0.5);
+            color: white;
+        }
+
+        .loading-overlay.hide {
+            display: none;
+        }
+
+        .spinner {
+            border: 16px solid #f3f3f3;
+            border-top: 16px solid #3498db;
+            border-radius: 50%;
+            width: 120px;
+            height: 120px;
+            animation: spin 2s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    </style>
+    
+</head>
+<body>
+    <h1>Bingo</h1>
+    <div class="option-overlay">
+        <div>
+            <h2>Which ways you want to import Bingo Board?</h2>
+            <div class="btn-container">
+                <div class="left">
+                    <button id="importSheetBtn" onclick="onImportSheet()">Import from sheet</button>
+                </div>
+                <div class="right">
+                    <button id="importImageBtn" onclick="onImportImage()">Import from image</button>
+                </div>
+            </div> 
+        </div>
+    </div>
+
+    <div class="loading-overlay hide">
+        <div class="spinner"></div>
+    </div>
+
+    <div id="board-input-container" class="hide">
+        <div>
+            <input type="file" accept="image/png, image/jpeg" id="file-input" multiple/>
+            <button id="submit_btn" onclick="onSubmit()">Submit</button>
+        </div>
+    </div>
+    <div id="number-input-container">
+        <input type="text" id="number" placeholder="Enter a number">
+        <button id="draw_btn" onclick="draw()">Draw</button>
+    </div>
+    <div id="bingo-container"></div>
+
+    <script>
+        function onImportSheet () {
+                google.script.run.withSuccessHandler(onSuccess).extractAllDataFromSheet();
+                document.querySelector('.option-overlay').classList.add('hide');
+                document.getElementsByClassName('loading-overlay')[0].classList.remove('hide');
+                document.getElementById('board-input-container').classList.add('hide');
+        }
+
+        function onImportImage  () {
+            document.querySelector('.option-overlay').classList.add('hide');
+            document.getElementById('board-input-container').classList.remove('hide');
+        }
+
+        function convertToTwoDimensionalArray(arr) {
+            let result = []; 
+            for (let i = 0; i < 5; i++) { 
+            result.push(arr.slice(i * 5, i * 5 + 5)); 
+            } 
+            return result;
+        }
+
+        const onImport = (result) => {
+            const content = JSON.stringify(result.candidates[0].content.parts[0]);
+            const arr = extractArrayFromString(content);
+            const twoDimensinalArr = convertToTwoDimensionalArray(arr);
+            addBoardToScreen(twoDimensinalArr);
+        };
+
+        // const importUrl = () => {
+        //     document.querySelector('.loading-overlay').classList.remove('hide');
+        //     const url = document.getElementById('board').value;
+        //     console.log(url)
+        //     google.script.run.withSuccessHandler(onGenerate).sendToGeminByUrl(url);
+        // };
+
+        // importUrlBtn.addEventListener('click', importUrl);
+
+        let boardsArr = [];
+
+        function onSuccess(result) {
+            boardsArr = result;
+            boardsArr.forEach((tableNumbers) => {
+                addBoardToScreen(tableNumbers);
+            });
+            document.querySelector('.loading-overlay').classList.add('hide');
+        }
+
+        function addBoardToScreen(tableNumbers) {
+            const table = document.createElement('table');
+            for (let i = 0; i < tableNumbers.length; i++) {
+                const row = document.createElement('tr');
+                for (let j = 0; j < tableNumbers[i].length; j++) {
+                    const cell = document.createElement('td');
+                    cell.textContent = tableNumbers[i][j];
+                    if (i === 2 && j === 2) {
+                        cell.textContent = 'FREE';
+                    }
+                    row.appendChild(cell);
+                }
+                table.appendChild(row);
+            }
+            document.getElementById('bingo-container').appendChild(table);
+        }
+
+        function draw () {
+            const number = document.getElementById('number').value;
+            console.log(number);
+            const tables = document.querySelectorAll('table');
+            tables.forEach((table) => {
+                const cells = table.querySelectorAll('td');
+                cells.forEach((cell) => {
+                    if (cell.textContent === number) {
+                        cell.style.backgroundColor = 'yellow';
+                    }
+                });
+            });
+            checkBingo();   
+        };
+
+        function checkBingo() {
+            const tables = document.querySelectorAll('table');
+            tables.forEach((table) => {
+                for (let i = 0; i < table.rows.length; i++) {
+                    let counter = 0;
+                    for (let j = 0; j < table.rows[i].cells.length; j++) {
+                        if (table.rows[i].cells[j].style.backgroundColor === 'yellow') {
+                            counter++;
+                        }
+                    }
+                    if (counter === 5) {
+                        alert('Bingo');
+                        for (let j = 0; j < table.rows[i].cells.length; j++) {
+                            table.rows[i].cells[j].style.backgroundColor = 'red';
+                        }
+                    }
+                }
+
+                for (let i = 0; i < table.rows[0].cells.length; i++) { 
+                    let counter = 0;
+                    for (let j = 0; j < table.rows.length; j++) {
+                        if (table.rows[j].cells[i].style.backgroundColor === 'yellow') {
+                            counter++;
+                        }
+                    }
+
+                    if (counter === 5) {
+                        alert('Bingo');
+                        for (let j = 0; j < table.rows.length; j++) {
+                            table.rows[j].cells[i].style.backgroundColor = 'red';
+                        }
+                    }
+                }
+
+                if (table.rows[0].cells[0].style.backgroundColor === 'yellow' &&
+                    table.rows[1].cells[1].style.backgroundColor === 'yellow' &&
+                    table.rows[2].cells[2].style.backgroundColor === 'yellow' &&
+                    table.rows[3].cells[3].style.backgroundColor === 'yellow' &&
+                    table.rows[4].cells[4].style.backgroundColor === 'yellow') {
+                    alert('Bingo');
+                    for (let i = 0; i < 5; i++) {
+                        table.rows[i].cells[i].style.backgroundColor = 'red';
+                    }
+                }
+
+                if (table.rows[0].cells[4].style.backgroundColor === 'yellow' &&
+                    table.rows[1].cells[3].style.backgroundColor === 'yellow' &&
+                    table.rows[2].cells[2].style.backgroundColor === 'yellow' &&
+                    table.rows[3].cells[1].style.backgroundColor === 'yellow' &&
+                    table.rows[4].cells[0].style.backgroundColor === 'yellow') {
+                    alert('Bingo');
+                    for (let i = 0; i < 5; i++) {
+                        table.rows[i].cells[4 - i].style.backgroundColor = 'red';
+                    }
+                }
+            });
+        }
+
+        function onSubmit () {
+            document.querySelector('.loading-overlay').classList.remove('hide');
+            const fileInput = document.getElementById('file-input');
+            const files = fileInput.files;
+            const blobArr = [];
+
+            if (files.length > 0) {
+              Array.from(files).forEach(file => {
+                  const reader = new FileReader();
+                  reader.onload = function(e) {
+                  const base64String = e.target.result.split(',')[1];
+                  const name = file.name;
+                  const type = file.type;
+                  blobArr.push({base64String, type});
+                  }
+                  reader.readAsDataURL(file);
+              })
+              setTimeout((() => {
+                  google.script.run.withSuccessHandler(onGenerate).sendToGeminiByBase64(blobArr);
+              }), '2000')
+            } 
+            else 
+            {
+            console.log('No file selected');
+            }
+        }
+
+        function onGenerate(result) {
+            result.forEach(board => {
+                addBoardToScreen(board); 
+            })
+            document.querySelector('.loading-overlay').classList.add('hide'); 
+        }
+    </script>
+</body>
+</html>
