@@ -1,32 +1,38 @@
 // Description: This code is used to send the image to the Gemini API and get the result from the API.
-const properties = PropertiesService.getScriptProperties(); 
+const properties = PropertiesService.getScriptProperties();
 
 // Please set the API_KEY and SHEET_ID in the PropertiesService.
 const API_KEY = properties.getProperty("API_KEY");
 const SHEET_ID = properties.getProperty("SHEET_ID");
 const GEMINI_URL = "https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=" + API_KEY;
+const spreadsheet = SpreadsheetApp.openById(SHEET_ID);
+
+function getSheetUrl() {
+  const userEmail = Session.getEffectiveUser().getEmail().split('@')[0];
+  let sheet = spreadsheet.getSheetByName(userEmail);
+  if (!sheet) {
+    sheet = spreadsheet.insertSheet().setName(userEmail);
+  }
+  const sheetUrl = spreadsheet.getUrl() + "#gid=" + sheet.getSheetId();
+  return sheetUrl;
+}
+
 
 /**
- * Convert image url to base64 string
- * @param {string} imgUrl 
- * @returns {string} base64String
+ * The event handler triggered when editing the spreadsheet.
+ * @param {Event} e The onEdit event.
+ * 
  */
-function convertImgUrlToBase64(imgUrl) {
-  const imageBlob = UrlFetchApp.fetch(imgUrl).getBlob();
-  return Utilities.base64Encode(imageBlob.getBytes());
+function onEdit(e) {
+  extractAllDataFromSheet();
 }
 
 /**
- * Convert one-dimensional array to two-dimensional array
- * @param {array} arr 
- * @returns {array} result
+ *
+ * @returns 
  */
-function convertToTwoDimensionalArray(arr) {
-  let result = []; 
-  for (let i = 0; i < 5; i++) { 
-  result.push(arr.slice(i * 5, i * 5 + 5)); 
-  } 
-  return result;
+function doGet() {
+  return HtmlService.createHtmlOutputFromFile("Index");
 }
 
 /**
@@ -39,19 +45,21 @@ function extractArraysFromString(text) {
   let currentIndex = 0;
 
   while (currentIndex < text.length) {
-      let headIndex = text.indexOf("[", currentIndex);
-      let tailIndex = text.indexOf("]", headIndex);
+    const headIndex = text.indexOf("[", currentIndex);
+    const tailIndex = text.indexOf("]", headIndex);
 
-      if (headIndex === -1 || tailIndex === -1) {
+    if (headIndex === -1 || tailIndex === -1) {
       break;
-      }
+    }
 
-      let arrayString = text.slice(headIndex + 1, tailIndex);
-      let array = arrayString.split(",").map(item => item.trim());
-      let twoDArr = convertToTwoDimensionalArray(array); 
-      arrays.push(twoDArr);
+    const arrayString = text.slice(headIndex + 1, tailIndex);
+    const array = arrayString.split(",").map(item => item.trim());
+    const array2D = Array.from({ length: 5 }, (_, i) =>
+      array.slice(i * 5, (i + 1) * 5)
+    );
+    arrays.push(array2D);
 
-      currentIndex = tailIndex + 1;
+    currentIndex = tailIndex + 1;
   }
   return arrays;
 };
@@ -61,7 +69,7 @@ function extractArraysFromString(text) {
  * @param {array} blobArr 
  * @returns {array} result
  */
-function sendToGeminiByBase64(blobArr) {
+function sendToGeminiByBase64(blobArr, isOveride) {
   const payload = {
     "contents": [
       {
@@ -76,12 +84,12 @@ function sendToGeminiByBase64(blobArr) {
 
   blobArr.forEach(blob => {
     payload.contents[0].parts.push(
-        {
-          "inlineData": {
-            "data": blob.base64String,
-            "mime_type": blob.type,
-          }
+      {
+        "inlineData": {
+          "data": blob.base64String,
+          "mime_type": blob.type,
         }
+      }
     )
   })
 
@@ -98,7 +106,7 @@ function sendToGeminiByBase64(blobArr) {
     const response = UrlFetchApp.fetch(GEMINI_URL, options);
     const json = JSON.parse(response.getContentText());
     const result = extractArraysFromString(JSON.stringify(json.candidates[0].content.parts[0]));
-    Logger.log("result: " + result);
+    saveDataToSheet(result, isOveride);
     return result;
   } catch (error) {
     Logger.log("Error occurred while sending data to Gemini API: " + error.message);
@@ -106,51 +114,52 @@ function sendToGeminiByBase64(blobArr) {
 }
 
 
-/**
- * Send image to Gemini API by image url
- * @param {string} imgUrl 
- * @returns {array} result
- */
-function sendToGeminByUrl(imgUrl) {
-  var base64Image = convertImgUrlToBase64(imgUrl); 
-  return sendToGeminiByBase64([{base64String: base64Image, type: "image/jpeg"}]);
-}
 
-/**
- *  doGet function
- * @returns {array} result
- */
-function doGet() {
-  return HtmlService.createHtmlOutputFromFile('Index');
-}
+function saveDataToSheet(arrs, isOverride) {
+  const userEmail = Session.getEffectiveUser().getEmail().split('@')[0];
+  let mainSheet = spreadsheet.getSheetByName(userEmail);
+  if (!mainSheet) {
+    mainSheet = spreadsheet.insertSheet().setName(userEmail);
+  }
+  if(isOverride) {
+    const range = mainSheet.getRange(1, 1, mainSheet.getLastRow(), 1);
+    range.clear();
+  }
 
+  arrs.forEach(arr => {
+    const numArr = arr.flat().join(" ");
+    mainSheet.appendRow([numArr]);
+  });
+}
 
 /**
  * extract all data from the sheet
  * @returns {array} result
  */
 function extractAllDataFromSheet() {
-  var spreadsheet = SpreadsheetApp.openById(SHEET_ID);
-  var sheet = spreadsheet.getSheetByName("Sheet1");
-  
-  var values = sheet.getRange(1, 1, sheet.getLastRow(), 1).getValues();
   const result = [];
+  const userEmail = Session.getEffectiveUser().getEmail().split('@')[0];
+  let mainSheet = spreadsheet.getSheetByName(userEmail);
+  // if (!mainSheet) {
+  //   mainSheet = spreadsheet.insertSheet().setName(userEmail);
+  // }
+
+  var values = mainSheet.getRange(1, 1, mainSheet.getLastRow(), 1).getValues();
 
   values.forEach(value => {
     const numArr = value.toString().split(' ');
 
-    if(numArr.length == 25 && !checkDuplicateNumber(numArr)) {
-      const twoDimensionArr = [];
-      for (let i = 0; i < 5; i++) {
-        const chunk = numArr.slice(i*5, i*5+5);
-        twoDimensionArr.push(chunk);
-      }
-      result.push(twoDimensionArr);
+    if (numArr.length == 25 && !checkDuplicateNumber(numArr)) {
+      const array2D = Array.from({ length: 5 }, (_, i) =>
+        numArr.slice(i * 5, (i + 1) * 5)
+      );
+      result.push(array2D);
     }
     else {
       Logger.log("there is invalid matrix");
     }
   });
+  Logger.log(result);
   return result;
 }
 
@@ -160,13 +169,13 @@ function extractAllDataFromSheet() {
  * @param {boolean}} isDuplicated 
  * @returns 
  */
-function checkDuplicateNumber(arr){
+function checkDuplicateNumber(arr) {
   let seen = new Set();
-  for(let i = 0; i < arr.length; i++) {
-      if (seen.has(arr[i])) {
-        return true;
-      }
-      seen.add(arr[i]);
+  for (let i = 0; i < arr.length; i++) {
+    if (seen.has(arr[i])) {
+      return true;
+    }
+    seen.add(arr[i]);
   }
   return false;
 }

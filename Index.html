@@ -92,32 +92,26 @@
       background-color: #0056b3;
     }
 
-    .option-overlay {
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
+    .option {
       display: flex;
       justify-content: center;
       align-items: center;
-      background-color: rgba(0, 0, 0, 0.5);
-      color: white;
-      flex-direction: column;
-      z-index: 10;
+      height: 100%;
     }
 
-    .option-overlay.hide {
+    .option.hide {
       display: none;
     }
 
-    .option-overlay > div {
-      width: 90%;
-      max-width: 400px;
-      background-color: white;
+    .option > div {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 20px;
       padding: 20px;
-      border-radius: 10px;
-      text-align: center;
+      border: 1px solid #ccc;
+      border-radius: 5px;
+      background-color: #f8f9fa;
     }
 
     .btn-container {
@@ -147,6 +141,10 @@
       flex-direction: column;
       align-items: center;
       margin-top: 20px;
+    }
+
+    #board-input-container.hide {
+      display: none;
     }
 
     #board-input-container input {
@@ -184,6 +182,36 @@
       animation: spin 2s linear infinite;
     }
 
+    .link-container {
+      display: flex;
+      justify-content: center;
+      gap: 20px;
+      margin-top: 20px;
+    }
+
+    .link-container a {
+      color: black;
+      text-decoration: none;
+      padding: 10px 20px;
+      border-radius: 5px;
+      transition: background-color 0.3s;
+    }
+
+    .link-container button {
+      padding: 10px 20px;
+      font-size: 16px;
+      cursor: pointer;
+      border: none;
+      background-color: #007bff;
+      color: white;
+      border-radius: 5px;
+      transition: background-color 0.3s;
+    }
+
+    .main-content.hide {
+      display: none;
+    } 
+
     @keyframes spin {
       0% {
         transform: rotate(0deg);
@@ -217,58 +245,98 @@
     <span class="material-symbols-outlined">
         arrow_back_ios
     </span>
-    <div class="option-overlay">
+    <!-- <div class="option">
         <div>
             <h2>Which ways you want to import Bingo Board?</h2>
             <div class="btn-container">
                 <div class="left">
-                    <button id="importSheetBtn" onclick="onImportSheet()">Import from sheet</button>
+                    <button id="importSheetBtn" onclick="onChooseSheet()">Import from sheet</button>
                 </div>
                 <div class="right">
-                    <button id="importImageBtn" onclick="onImportImage()">Import from image</button>
+                    <button id="importImageBtn" onclick="onChooseImage()">Import from image</button>
                 </div>
             </div> 
         </div>
-    </div>
+    </div> -->
 
     <div class="loading-overlay hide">
         <div class="spinner"></div>
     </div>
 
-    <div id="board-input-container" class="hide">
+    <div class="link-container"></div>
+
+    <div class="main-content">
+      <div id="board-input-container">
         <div>
-            <input type="file" accept="image/png, image/jpeg" id="file-input" multiple/>
+            <input type="file" accept="image/png, image/jpeg" id="file-input" placeholder="Image/png/jpeg" multiple/>
             <button id="submit_btn" onclick="onSubmit()">Submit</button>
         </div>
-    </div>
-    <div id="number-input-container">
+      </div>
+      <div id="number-input-container">
         <input type="text" id="number" placeholder="Enter a number">
         <button id="draw_btn" onclick="draw()">Draw</button>
+      </div>
+      <div id="bingo-container"></div>
     </div>
-    <div id="bingo-container"></div>
+    
 
     <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            document.querySelector('.loading-overlay').classList.remove('hide');
+            google.script.run.withSuccessHandler(onGetSheetUrl).getSheetUrl();
+        });
         
         let recentTables = [];
         let boardData = [];
         let drawedSet = new Set();
 
+        function onGetSheetUrl(url) {
+          const linkText = document.createTextNode('Click here to import bingo board from sheet');
+          const linkContainer = document.querySelector('.link-container');
+          const link = document.createElement('a');
+          const button = document.createElement('button');
+          button.textContent = 'Import';
+          button.onclick = () => {
+              google.script.run.withFailureHandler(onImportSheetFailure).withSuccessHandler(onImportSheetSuccess).extractAllDataFromSheet();
+              document.querySelector('.loading-overlay').classList.remove('hide');
+          };
+          
+          link.href = url;
+          link.target = '_blank';
+          link.appendChild(linkText);
+          linkContainer.appendChild(link);
+          linkContainer.appendChild(button);
+          document.querySelector('.loading-overlay').classList.add('hide');
+        }
+
         /**
-         * Import sheet
+         * Import sheet failure
          */
-        function onImportSheet () {
-                google.script.run.withSuccessHandler(onSuccess).extractAllDataFromSheet();
-                document.querySelector('.option-overlay').classList.add('hide');
-                document.getElementsByClassName('loading-overlay')[0].classList.remove('hide');
-                document.getElementById('board-input-container').classList.add('hide');
+        function onImportSheetFailure(err) {
+            alert('Failed to import data from sheet' + err);
+            document.querySelector('.loading-overlay').classList.add('hide');
+        }
+
+        /**
+         * Get recent bingo boards
+         * @param {Array} result 
+         */
+         function onImportSheetSuccess(result) {
+            recentTables = result;
+            recentTables.forEach((table) => {
+                addBoardToScreen(table);
+            });
+            document.querySelector('.loading-overlay').classList.add('hide');
         }
 
         /**
          * Import image
          */
-        function onImportImage  () {
-            document.querySelector('.option-overlay').classList.add('hide');
+        function onChooseImage  () {
+            document.querySelector('.option').classList.add('hide');
+            document.querySelector('.main-content').classList.remove('hide');
             document.getElementById('board-input-container').classList.remove('hide');
+            document.getElementById('number-input-container').classList.remove('hide');
         }
 
         /**
@@ -282,18 +350,6 @@
             result.push(arr.slice(i * 5, i * 5 + 5)); 
             } 
             return result;
-        }
-
-        /**
-         * Get recent bingo boards
-         * @param {Array} result 
-         */
-        function onSuccess(result) {
-            recentTables = result;
-            recentTables.forEach((table) => {
-                addBoardToScreen(table);
-            });
-            document.querySelector('.loading-overlay').classList.add('hide');
         }
 
         /**
@@ -337,27 +393,26 @@
                         }
                     }
                     else { 
-                        cell.textContent = val;
+                      cell.textContent = val;
                     }
                     if (val !== 'X') {
-                        positions[val] = { row: i, col: j };
+                      positions[val] = { row: i, col: j };
                     }
                     bingoCard.appendChild(cell);
                 }
             }
 
             boardData.push({
-                positions,
-                rowMarks,
-                colMarks,
-                diag1Marks,
-                diag2Marks,
-                hasBingo,
+              positions,
+              rowMarks,
+              colMarks,
+              diag1Marks,
+              diag2Marks,
+              hasBingo,
             });
             
             bingoContainer.appendChild(bingoCard);
         }
-
 
         /**
          * Draw number and check bingo for each board
@@ -366,31 +421,26 @@
             const number = document.getElementById('number').value.trim();
             
             if (number === '') {
-                alert('Please enter a number');
-                return;
+              alert('Please enter a number');
+              return;
             }
-
-            if (drawedSet.has(number)) {
-                alert('Number already drawed');
-                return;
-            }
-
             if (recentTables.length === 0) {
-                alert('Please import a bingo board first');
-                return;
+              alert('Please import a bingo board first');
+              return;
+            }
+            if (drawedSet.has(number)) {
+              alert('Number already drawed');
+              return;
             }
 
-            drawedSet.add(number);
             let anyBoardBingo = false;
 
             boardData.forEach((table, tableIndex) => {
-                if(table.hasBingo) {
-                    return;
+                if(table.hasBingo && !table.positions.hasOwnProperty(number)) {
+                  return;
                 }
 
-                if(!table.positions.hasOwnProperty(number)) {
-                    return;
-                }
+                drawedSet.add(number);
 
                 const { row, col } = table.positions[number];
                 recentTables[tableIndex][row][col] = 'X';
@@ -398,22 +448,23 @@
                 table.rowMarks[row]++;
                 table.colMarks[col]++;
                 if(row === col) {
-                    table.diag1Marks++;
+                  table.diag1Marks++;
                 }
                 if(row + col === 4) {
-                    table.diag2Marks++;
+                  table.diag2Marks++;
                 }
 
                 highlightCell(row, col, tableIndex);
 
                 if(table.rowMarks[row] === 5 || table.colMarks[col] === 5 || table.diag1Marks === 5 || table.diag2Marks === 5) {
-                    table.hasBingo = true;
-                    anyBoardBingo = true;
-                    highlightBingo(tableIndex, row, col, table);
+                  table.hasBingo = true;
+                  anyBoardBingo = true;
+                  highlightBingo(tableIndex, row, col, table);
                 }
             });
+
             if (anyBoardBingo) {
-                alert('Bingo!');
+              alert('Bingo!');
             }
         }
 
@@ -472,6 +523,7 @@
          * Submit image
          */
         function onSubmit () {
+            const isOveride = window.confirm('Are you sure you want to overide the image?');
             document.querySelector('.loading-overlay').classList.remove('hide');
             const fileInput = document.getElementById('file-input');
             const files = fileInput.files;
@@ -489,7 +541,7 @@
                   reader.readAsDataURL(file);
               })
               setTimeout((() => {
-                  google.script.run.withSuccessHandler(onGenerate).sendToGeminiByBase64(blobArr);
+                  google.script.run.withFailureHandler(onGenerateFailure).withSuccessHandler(onGenerateSuccess).sendToGeminiByBase64(blobArr, isOveride);
               }), 2000)
             } 
             else 
@@ -499,12 +551,24 @@
             }
         }
 
-        function onGenerate(result) {
-            recentTables.push(result);
-            result.forEach(board => {
-                addBoardToScreen(board); 
-            })
-            document.querySelector('.loading-overlay').classList.add('hide'); 
+        /**
+         * Generate failure
+         */
+        function onGenerateFailure() {
+            alert('Failed to submit image');
+            document.querySelector('.loading-overlay').classList.add('hide');
+        }
+
+        /**
+         * Generate success
+         * @param {Array} result 
+         */
+        function onGenerateSuccess(result) {
+          recentTables.push(result);
+          result.forEach(board => {
+              addBoardToScreen(board); 
+          })
+          document.querySelector('.loading-overlay').classList.add('hide'); 
         }
     </script>
 </body>
