@@ -251,6 +251,7 @@
         
         let recentTables = [];
         let boardData = [];
+        let drawedSet = new Set();
 
         /**
          * Import sheet
@@ -363,16 +364,23 @@
          */
         function draw() {
             const number = document.getElementById('number').value.trim();
-
+            
             if (number === '') {
                 alert('Please enter a number');
                 return;
             }
+
+            if (drawedSet.has(number)) {
+                alert('Number already drawed');
+                return;
+            }
+
             if (recentTables.length === 0) {
                 alert('Please import a bingo board first');
                 return;
             }
 
+            drawedSet.add(number);
             let anyBoardBingo = false;
 
             boardData.forEach((table, tableIndex) => {
@@ -386,7 +394,7 @@
 
                 const { row, col } = table.positions[number];
                 recentTables[tableIndex][row][col] = 'X';
-
+                
                 table.rowMarks[row]++;
                 table.colMarks[col]++;
                 if(row === col) {
@@ -404,7 +412,6 @@
                     highlightBingo(tableIndex, row, col, table);
                 }
             });
-
             if (anyBoardBingo) {
                 alert('Bingo!');
             }
