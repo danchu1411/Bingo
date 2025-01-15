@@ -1,64 +1,177 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Bingo</title>
-    <base target="_top">
-    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200&icon_names=arrow_back_ios" />
-    <style>
-    .material-symbols-outlined {
-      font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+  <title>Bingo</title>
+  <base target="_top"/>
+
+  <!-- Google Icons & Fonts -->
+  <link 
+    rel="stylesheet"
+    href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined"
+  />
+  <link
+    rel="stylesheet"
+    href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap"
+  />
+
+  <style>
+    /* General reset for margin and padding */
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      font-family: 'Poppins', sans-serif;
     }
 
-    p {
-      color: black;
+    body {
+      background-color: #f9f9fb;
+      color: #333;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
     }
 
-    h1 {
+    /* Header / Title Section */
+    .header {
+      background-color: #ffffff;
+      box-shadow: 0 1px 4px rgba(0, 0, 0, 0.1);
+      padding: 10px 20px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .header .material-symbols-outlined {
+      cursor: pointer;
+      font-size: 28px;
+      transition: color 0.3s;
+    }
+
+    .header .material-symbols-outlined:hover {
+      color: #007bff;
+    }
+
+    .header h1 {
+      font-size: 28px;
+      font-weight: 600;
+      color: #333;
+      margin: 0;
+    }
+
+    /* Main content container to center everything */
+    .container {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      padding: 20px;
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+
+    .main-content {
+      margin-top: 20px;
+      background-color: #fff;
+      border-radius: 8px;
+      padding: 20px;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    }
+
+    .main-content.hide {
+      display: none;
+    }
+
+    .section-title {
+      font-size: 20px;
+      margin-bottom: 10px;
       text-align: center;
-      font-size: 50px;
-      margin: 20px 0;
+      font-weight: 600;
     }
 
-    .bingo-card {
-            display: grid;
-            grid-template-columns: repeat(5, 1fr);
-            grid-template-rows: repeat(5, 1fr);
-            gap: 5px;
-            width: 300px;
-            height: 300px;
-            background-color: #fff;
-            border: 2px solid #333;
-            border-radius: 8px;
-            padding: 10px;
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
-    }
-
-    .cell {
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        background-color: #e9ecef;
-        border: 1px solid #dee2e6;
-        font-size: 1.2rem;
-        font-weight: bold;
-        color: #333;
-        text-transform: uppercase;
-        border-radius: 4px;
-    }
-
-    .cell.free {
-        background-color: #6c757d;
-        color: #fff;
-    }
-
+    /* Bingo Container */
     #bingo-container {
       display: flex;
       justify-content: center;
       flex-wrap: wrap;
       gap: 20px;
-      padding: 20px;
+      padding: 20px 0;
+    }
+
+    /* Bingo Card */
+    .bingo-card {
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      grid-template-rows: repeat(5, 1fr);
+      gap: 5px;
+      width: 300px;
+      height: 300px;
+      background-color: #fff;
+      border: 2px solid #ccc;
+      border-radius: 8px;
+      padding: 10px;
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.08);
+    }
+
+    .cell {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      background-color: #edf2f7;
+      border: 1px solid #dee2e6;
+      font-size: 1.2rem;
+      font-weight: 600;
+      color: #333;
+      text-transform: uppercase;
+      border-radius: 4px;
+    }
+
+    .cell.free {
+      background-color: #6c757d;
+      color: #fff;
+    }
+
+    /* File and Number Input Sections */
+    #board-input-container {
+      display: flex;
+      flex-direction: row;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 20px;
+    }
+
+    #board-input-container.hide {
+      display: none;
+    }
+
+    #board-input-container input {
+      margin-left: 10px;
+      padding: 10px;
+      font-size: 16px;
+      border: 1px solid #ccc;
+      border-radius: 5px;
+      width: 250px;
+      transition: border-color 0.3s;
+    }
+
+    #board-input-container input:focus {
+      outline: none;
+      border-color: #007bff;
+    }
+
+    #board-input-container button {
+      padding: 10px 20px;
+      font-size: 16px;
+      cursor: pointer;
+      border: none;
+      background-color: #007bff;
+      color: white;
+      border-radius: 5px;
+      transition: background-color 0.3s;
+    }
+
+    #board-input-container button:hover {
+      background-color: #0056b3;
     }
 
     #number-input-container {
@@ -75,6 +188,12 @@
       width: 250px;
       border: 1px solid #ccc;
       border-radius: 5px;
+      transition: border-color 0.3s;
+    }
+
+    #number-input-container input:focus {
+      outline: none;
+      border-color: #007bff;
     }
 
     #number-input-container button {
@@ -92,69 +211,7 @@
       background-color: #0056b3;
     }
 
-    .option {
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      height: 100%;
-    }
-
-    .option.hide {
-      display: none;
-    }
-
-    .option > div {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      gap: 20px;
-      padding: 20px;
-      border: 1px solid #ccc;
-      border-radius: 5px;
-      background-color: #f8f9fa;
-    }
-
-    .btn-container {
-      display: flex;
-      justify-content: space-between;
-      gap: 20px;
-      margin-top: 20px;
-    }
-
-    .btn-container > div > button {
-      padding: 10px;
-      font-size: 16px;
-      cursor: pointer;
-      border: none;
-      background-color: #007bff;
-      color: white;
-      border-radius: 5px;
-      transition: background-color 0.3s;
-    }
-
-    .btn-container > div > button:hover {
-      background-color: #0056b3;
-    }
-
-    #board-input-container {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      margin-top: 20px;
-    }
-
-    #board-input-container.hide {
-      display: none;
-    }
-
-    #board-input-container input {
-      margin-bottom: 20px;
-      padding: 10px;
-      font-size: 16px;
-      border: 1px solid #ccc;
-      border-radius: 5px;
-    }
-
+    /* Loading Overlay */
     .loading-overlay {
       position: fixed;
       top: 0;
@@ -182,45 +239,88 @@
       animation: spin 2s linear infinite;
     }
 
-    .link-container {
-      display: flex;
-      justify-content: center;
-      gap: 20px;
-      margin-top: 20px;
-    }
-
-    .link-container a {
-      color: black;
-      text-decoration: none;
-      padding: 10px 20px;
-      border-radius: 5px;
-      transition: background-color 0.3s;
-    }
-
-    .link-container button {
-      padding: 10px 20px;
-      font-size: 16px;
-      cursor: pointer;
-      border: none;
-      background-color: #007bff;
-      color: white;
-      border-radius: 5px;
-      transition: background-color 0.3s;
-    }
-
-    .main-content.hide {
-      display: none;
-    } 
-
     @keyframes spin {
-      0% {
-        transform: rotate(0deg);
-      }
-      100% {
-        transform: rotate(360deg);
-      }
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
     }
 
+    .import-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-direction: column;
+    padding: 20px;
+    background-color: #f9f9f9;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    margin: 20px;
+  }
+
+  .section-title {
+    font-size: 18px;
+    font-weight: bold;
+    margin-bottom: 10px;
+  }
+
+    /* Link Container */
+    .link-container {
+      /* Centers the link and button in one row */
+      display: flex;
+      justify-content: center; 
+      align-items: center;
+      gap: 12px;                 /* Space between link and button */
+      margin: 20px 0;           /* Spacing around the container */
+    }
+
+  .link-container a,
+  .link-container button {
+    display: inline-flex;
+    align-items: center;
+    flex-direction: row;
+    gap: 6px;
+    text-decoration: none;
+    font-size: 14px;
+    font-weight: 500;
+    border: 1px solid transparent;
+    padding: 8px 14px;
+    border-radius: 4px;
+    transition: 0.3s ease;
+  }
+
+  /* Styling for the link */
+  .link-container a {
+    color: #007bff;
+    background-color: transparent; 
+    border-color: #007bff;
+  }
+
+  /* Hover effect for the link */
+  .link-container a:hover {
+    color: #ffffff;
+    background-color: #007bff;
+    border-color: #007bff;
+  }
+
+  /* Styling for the button */
+  .link-container button {
+    cursor: pointer;
+    color: #ffffff;
+    background-color: #28a745;
+    border-color: #28a745;
+  }
+
+  /* Hover effect for the button */
+  .link-container button:hover {
+    background-color: #218838;
+    border-color: #218838;
+  }
+
+  .submit_btn {
+    margin-bottom: 10px;
+  }
+
+    /* Responsive Tweaks */
     @media screen and (max-width: 768px) {
       .bingo-card {
         max-width: 300px;
@@ -236,340 +336,352 @@
         max-width: 100%;
       }
     }
-</style>
-
-    
+  </style>
 </head>
 <body>
-    <h1>Bingo</h1>
-    <span class="material-symbols-outlined">
-        arrow_back_ios
+  <!-- Header -->
+  <div class="header">
+    <span class="material-symbols-outlined" onclick="history.back()">
+      arrow_back_ios
     </span>
-    <!-- <div class="option">
-        <div>
-            <h2>Which ways you want to import Bingo Board?</h2>
-            <div class="btn-container">
-                <div class="left">
-                    <button id="importSheetBtn" onclick="onChooseSheet()">Import from sheet</button>
-                </div>
-                <div class="right">
-                    <button id="importImageBtn" onclick="onChooseImage()">Import from image</button>
-                </div>
-            </div> 
-        </div>
-    </div> -->
+    <h1>Bingo</h1>
+  </div>
 
+  <!-- Main Container -->
+  <div class="container">
+
+    <!-- Loading Overlay -->
     <div class="loading-overlay hide">
-        <div class="spinner"></div>
+      <div class="spinner"></div>
     </div>
 
-    <div class="link-container"></div>
-
-    <div class="main-content">
+    <!-- Link Container (Sheet Import Button & Link) -->
+    <div class="import-container">
+      <div class="section-title">Import From Image</div>
       <div id="board-input-container">
-        <div>
-            <input type="file" accept="image/png, image/jpeg" id="file-input" placeholder="Image/png/jpeg" multiple/>
-            <button id="submit_btn" onclick="onSubmit()">Submit</button>
-        </div>
+        <input
+          type="file"
+          accept="image/png, image/jpeg"
+          id="file-input"
+          placeholder="Image/png/jpeg"
+          multiple
+        />
+        <button id="submit_btn" onclick="onSubmit()">Submit</button>
       </div>
+      <div class="link-container"></div>
+    </div>
+
+    <!-- Main Content (hidden or shown based on user flow) -->
+    <div class="main-content">
       <div id="number-input-container">
-        <input type="text" id="number" placeholder="Enter a number">
+        <input type="text" id="number" placeholder="Enter a number" />
         <button id="draw_btn" onclick="draw()">Draw</button>
       </div>
+
       <div id="bingo-container"></div>
     </div>
+  </div>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      // Show loading overlay while getting sheet URL
+      document.querySelector('.loading-overlay').classList.remove('hide');
+      google.script.run.withSuccessHandler(onGetSheetUrl).getSheetUrl();
+    });
     
+    let recentTables = [];
+    let boardData = [];
+    let drawedSet = new Set();
 
-    <script>
-        document.addEventListener('DOMContentLoaded', () => {
-            document.querySelector('.loading-overlay').classList.remove('hide');
-            google.script.run.withSuccessHandler(onGetSheetUrl).getSheetUrl();
-        });
+    function onGetSheetUrl(url) {
+      const linkText = document.createTextNode('Click here to import bingo board from sheet');
+      const linkContainer = document.querySelector('.link-container');
+      const link = document.createElement('a');
+      const button = document.createElement('button');
+      button.textContent = 'Import from Sheet';
+      button.onclick = () => {
+        google.script.run
+          .withFailureHandler(onImportSheetFailure)
+          .withSuccessHandler(onImportSheetSuccess)
+          .extractAllDataFromSheet();
+        document.querySelector('.loading-overlay').classList.remove('hide');
+      };
+      
+      link.href = url;
+      link.target = '_blank';
+      link.appendChild(linkText);
+      linkContainer.appendChild(link);
+      linkContainer.appendChild(button);
+      document.querySelector('.loading-overlay').classList.add('hide');
+    }
+
+    /**
+     * Import sheet failure
+     */
+    function onImportSheetFailure(err) {
+      alert('Failed to import data from sheet: ' + err);
+      document.querySelector('.loading-overlay').classList.add('hide');
+    }
+
+    /**
+     * Get recent bingo boards
+     * @param {Array} result 
+     */
+    function onImportSheetSuccess(result) {
+      const bingoContainer = document.getElementById('bingo-container');
+      while (bingoContainer.firstChild) {
+        bingoContainer.removeChild(bingoContainer.firstChild);
+      }
+      recentTables = result;
+      recentTables.forEach((table) => {
+        addBoardToScreen(table);
+      });
+      document.querySelector('.loading-overlay').classList.add('hide');
+    }
+
+    /**
+     * Convert array to 2D array
+     * @param {Array} arr 
+     * @returns {Array}
+     */
+    function convertToTwoDimensionalArray(arr) {
+      let result = []; 
+      for (let i = 0; i < 5; i++) { 
+        result.push(arr.slice(i * 5, i * 5 + 5)); 
+      } 
+      return result;
+    }
+
+    /**
+     * Add bingo board to screen
+     * @param {Array} tableNumbers 
+     */
+    function addBoardToScreen(tableNumbers) {
+      const bingoCard = document.createElement('div');
+      bingoCard.classList.add('bingo-card');
+      const bingoContainer = document.getElementById('bingo-container');
+
+      // Initialize board data
+      let positions = {};               
+      let rowMarks = [0, 0, 0, 0, 0];    
+      let colMarks = [0, 0, 0, 0, 0];    
+      let diag1Marks = 0;               
+      let diag2Marks = 0;               
+      let hasBingo = false;             
+      const size = 5; 
+
+      // Create cells
+      for (let i = 0; i < tableNumbers.length; i++) {
+        for (let j = 0; j < tableNumbers[i].length; j++) {
+          const cell = document.createElement('div');
+          cell.classList.add('cell');
+
+          let val = tableNumbers[i][j];
+          if (i === 2 && j === 2) { // Center cell => Free
+            cell.classList.add('free');
+            cell.textContent = 'Free';
+            tableNumbers[i][j] = 'X';
+            val = 'X';
+
+            rowMarks[i]++;
+            colMarks[j]++;
+            if (i === j) {
+              diag1Marks++;
+            }
+            if (i + j === size - 1) {
+              diag2Marks++;
+            }
+          } else { 
+            cell.textContent = val;
+          }
+
+          if (val !== 'X') {
+            positions[val] = { row: i, col: j };
+          }
+          bingoCard.appendChild(cell);
+        }
+      }
+
+      boardData.push({
+        positions,
+        rowMarks,
+        colMarks,
+        diag1Marks,
+        diag2Marks,
+        hasBingo,
+      });
+      
+      bingoContainer.appendChild(bingoCard);
+    }
+
+    /**
+     * Draw number and check bingo for each board
+     */
+    function draw() {
+      const number = document.getElementById('number').value.trim();
+      
+      if (number === '') {
+        alert('Please enter a number');
+        return;
+      }
+      if (recentTables.length === 0) {
+        alert('Please import a bingo board first');
+        return;
+      }
+      if (drawedSet.has(number)) {
+        alert('Number already drawn!');
+        return;
+      }
+
+      let anyBoardBingo = false;
+
+      boardData.forEach((table, tableIndex) => {
+        if (table.hasBingo && !table.positions.hasOwnProperty(number)) {
+          return;
+        }
+
+        drawedSet.add(number);
+
+        const { row, col } = table.positions[number];
+        recentTables[tableIndex][row][col] = 'X';
         
-        let recentTables = [];
-        let boardData = [];
-        let drawedSet = new Set();
+        table.rowMarks[row]++;
+        table.colMarks[col]++;
+        if (row === col) {
+          table.diag1Marks++;
+        }
+        if (row + col === 4) {
+          table.diag2Marks++;
+        }
 
-        function onGetSheetUrl(url) {
-          const linkText = document.createTextNode('Click here to import bingo board from sheet');
-          const linkContainer = document.querySelector('.link-container');
-          const link = document.createElement('a');
-          const button = document.createElement('button');
-          button.textContent = 'Import';
-          button.onclick = () => {
-              google.script.run.withFailureHandler(onImportSheetFailure).withSuccessHandler(onImportSheetSuccess).extractAllDataFromSheet();
-              document.querySelector('.loading-overlay').classList.remove('hide');
+        highlightCell(row, col, tableIndex);
+
+        if (
+          table.rowMarks[row] === 5 ||
+          table.colMarks[col] === 5 ||
+          table.diag1Marks === 5 ||
+          table.diag2Marks === 5
+        ) {
+          table.hasBingo = true;
+          anyBoardBingo = true;
+          highlightBingo(tableIndex, row, col, table);
+        }
+      });
+
+      if (anyBoardBingo) {
+        alert('Bingo!');
+      }
+    }
+
+    /**
+     * Highlight cell
+     * @param {number} row 
+     * @param {number} col 
+     * @param {number} boardIndex 
+     */
+    function highlightCell(row, col, boardIndex) {
+      const board = document.querySelectorAll('.bingo-card')[boardIndex];
+      const cellIndex = row * 5 + col;
+      const cell = board.querySelectorAll('.cell')[cellIndex];
+      cell.style.backgroundColor = '#FFEB3B'; /* yellow highlight */
+    }
+
+    /**
+     * Highlight bingo
+     * @param {number} boardIndex 
+     * @param {number} row 
+     * @param {number} col 
+     * @param {Object} bData 
+     */
+    function highlightBingo(boardIndex, row, col, bData) {
+      const board = document.querySelectorAll('.bingo-card')[boardIndex];
+      // If row is complete
+      if (bData.rowMarks[row] === 5) {
+        for (let j = 0; j < 5; j++) {
+          board.querySelectorAll('.cell')[row * 5 + j].style.backgroundColor = 'green';
+        }
+      }
+      // If col is complete
+      if (bData.colMarks[col] === 5) {
+        for (let i = 0; i < 5; i++) {
+          board.querySelectorAll('.cell')[i * 5 + col].style.backgroundColor = 'green';
+        }
+      }
+      // If main diagonal is complete
+      if (bData.diag1Marks === 5) {
+        for (let i = 0; i < 5; i++) {
+          board.querySelectorAll('.cell')[i * 5 + i].style.backgroundColor = 'green';
+        }
+      }
+      // If anti-diagonal is complete
+      if (bData.diag2Marks === 5) {
+        for (let i = 0; i < 5; i++) {
+          board.querySelectorAll('.cell')[i * 5 + (4 - i)].style.backgroundColor = 'green';
+        }
+      }
+    }
+
+    /**
+     * Submit image
+     */
+    function onSubmit() {
+      const isOveride = window.confirm('Are you sure you want to overwrite the image(s)?');
+      document.querySelector('.loading-overlay').classList.remove('hide');
+      const fileInput = document.getElementById('file-input');
+      const files = fileInput.files;
+      const blobArr = [];
+
+      if (files.length > 0) {
+        Array.from(files).forEach(file => {
+          const reader = new FileReader();
+          reader.onload = function(e) {
+            const base64String = e.target.result.split(',')[1];
+            const name = file.name;
+            const type = file.type;
+            blobArr.push({ base64String, type });
           };
-          
-          link.href = url;
-          link.target = '_blank';
-          link.appendChild(linkText);
-          linkContainer.appendChild(link);
-          linkContainer.appendChild(button);
-          document.querySelector('.loading-overlay').classList.add('hide');
+          reader.readAsDataURL(file);
+        });
+
+        setTimeout(() => {
+          google.script.run
+            .withFailureHandler(onGenerateFailure)
+            .withSuccessHandler(onGenerateSuccess)
+            .sendToGeminiByBase64(blobArr, isOveride);
+        }, 2000);
+      } else {
+        alert('Please select a file.');
+        document.querySelector('.loading-overlay').classList.add('hide');
+      }
+    }
+
+    /**
+     * Generate failure
+     */
+    function onGenerateFailure() {
+      alert('Failed to submit image');
+      document.querySelector('.loading-overlay').classList.add('hide');
+    }
+
+    /**
+     * Generate success
+     * @param {Array} result 
+     */
+    function onGenerateSuccess({result, isOveride}) {
+      //clear previous boards
+      const bingoContainer = document.getElementById('bingo-container');
+      if(isOveride) {
+        while (bingoContainer.firstChild) {
+          bingoContainer.removeChild(bingoContainer.firstChild);
         }
+      }
 
-        /**
-         * Import sheet failure
-         */
-        function onImportSheetFailure(err) {
-            alert('Failed to import data from sheet' + err);
-            document.querySelector('.loading-overlay').classList.add('hide');
-        }
-
-        /**
-         * Get recent bingo boards
-         * @param {Array} result 
-         */
-         function onImportSheetSuccess(result) {
-            recentTables = result;
-            recentTables.forEach((table) => {
-                addBoardToScreen(table);
-            });
-            document.querySelector('.loading-overlay').classList.add('hide');
-        }
-
-        /**
-         * Import image
-         */
-        function onChooseImage  () {
-            document.querySelector('.option').classList.add('hide');
-            document.querySelector('.main-content').classList.remove('hide');
-            document.getElementById('board-input-container').classList.remove('hide');
-            document.getElementById('number-input-container').classList.remove('hide');
-        }
-
-        /**
-         * Convert array to 2D array
-         * @param {Array} arr 
-         * @returns {Array}
-         */
-        function convertToTwoDimensionalArray(arr) {
-            let result = []; 
-            for (let i = 0; i < 5; i++) { 
-            result.push(arr.slice(i * 5, i * 5 + 5)); 
-            } 
-            return result;
-        }
-
-        /**
-         * Add bingo board to screen
-         * @param {Array} tableNumbers 
-         */
-        function addBoardToScreen(tableNumbers) {
-            const bingoCard = document.createElement('div');
-            bingoCard.classList.add('bingo-card');
-            const bingoContainer = document.getElementById('bingo-container');
-
-            // Initialize board data
-            let positions = {};               
-            let rowMarks = [0, 0, 0, 0, 0];    
-            let colMarks = [0, 0, 0, 0, 0];   
-            let diag1Marks = 0;               
-            let diag2Marks = 0;              
-            let hasBingo = false;             
-            const size = 5; 
-
-            // Create cells
-            for(let i = 0; i < tableNumbers.length; i++) {
-                for(let j = 0; j < tableNumbers[i].length; j++) {
-                    const cell = document.createElement('div');
-                    cell.classList.add('cell');
-
-                    let val = tableNumbers[i][j];
-                    if (i === 2 && j === 2) { // Center cell
-                        cell.classList.add('free');
-                        cell.textContent = 'Free';
-                        tableNumbers[i][j] = 'X';
-                        val = 'X';
-
-                        rowMarks[i]++;
-                        colMarks[j]++;
-                        if (i === j) {
-                            diag1Marks++;
-                        }
-                        if (i + j === size - 1) {
-                            diag2Marks++;
-                        }
-                    }
-                    else { 
-                      cell.textContent = val;
-                    }
-                    if (val !== 'X') {
-                      positions[val] = { row: i, col: j };
-                    }
-                    bingoCard.appendChild(cell);
-                }
-            }
-
-            boardData.push({
-              positions,
-              rowMarks,
-              colMarks,
-              diag1Marks,
-              diag2Marks,
-              hasBingo,
-            });
-            
-            bingoContainer.appendChild(bingoCard);
-        }
-
-        /**
-         * Draw number and check bingo for each board
-         */
-        function draw() {
-            const number = document.getElementById('number').value.trim();
-            
-            if (number === '') {
-              alert('Please enter a number');
-              return;
-            }
-            if (recentTables.length === 0) {
-              alert('Please import a bingo board first');
-              return;
-            }
-            if (drawedSet.has(number)) {
-              alert('Number already drawed');
-              return;
-            }
-
-            let anyBoardBingo = false;
-
-            boardData.forEach((table, tableIndex) => {
-                if(table.hasBingo && !table.positions.hasOwnProperty(number)) {
-                  return;
-                }
-
-                drawedSet.add(number);
-
-                const { row, col } = table.positions[number];
-                recentTables[tableIndex][row][col] = 'X';
-                
-                table.rowMarks[row]++;
-                table.colMarks[col]++;
-                if(row === col) {
-                  table.diag1Marks++;
-                }
-                if(row + col === 4) {
-                  table.diag2Marks++;
-                }
-
-                highlightCell(row, col, tableIndex);
-
-                if(table.rowMarks[row] === 5 || table.colMarks[col] === 5 || table.diag1Marks === 5 || table.diag2Marks === 5) {
-                  table.hasBingo = true;
-                  anyBoardBingo = true;
-                  highlightBingo(tableIndex, row, col, table);
-                }
-            });
-
-            if (anyBoardBingo) {
-              alert('Bingo!');
-            }
-        }
-
-
-        /**
-         * Highlight cell
-         * @param {number} row 
-         * @param {number} col 
-         * @param {number} boardIndex 
-         */
-        function highlightCell(row, col, boardIndex) {
-            const board = document.querySelectorAll('.bingo-card')[boardIndex];
-            const cellIndex = row * 5 + col;
-            const cell = board.querySelectorAll('.cell')[cellIndex];
-            cell.style.backgroundColor = 'yellow';
-        }
-
-
-        /**
-         * Highlight bingo
-         * @param {number} boardIndex 
-         * @param {number} row 
-         * @param {number} col 
-         * @param {Object} bData 
-         */
-        function highlightBingo(boardIndex, row, col, bData) {
-            const board = document.querySelectorAll('.bingo-card')[boardIndex];
-            // If row is complete
-            if (bData.rowMarks[row] === 5) {
-                for (let j = 0; j < 5; j++) {
-                    board.querySelectorAll('.cell')[row * 5 + j].style.backgroundColor = 'green';
-                }
-            }
-            // If col is complete
-            if (bData.colMarks[col] === 5) {
-                for (let i = 0; i < 5; i++) {
-                    board.querySelectorAll('.cell')[i * 5 + col].style.backgroundColor = 'green';
-                }
-            }
-            // If main diagonal is complete
-            if (bData.diag1Marks === 5) {
-                for (let i = 0; i < 5; i++) {
-                    board.querySelectorAll('.cell')[i * 5 + i].style.backgroundColor = 'green';
-                }
-            }
-            // If anti-diagonal is complete
-            if (bData.diag2Marks === 5) {
-                for (let i = 0; i < 5; i++) {
-                    board.querySelectorAll('.cell')[i * 5 + (4 - i)].style.backgroundColor = 'green';
-                }
-            }
-        }
-
-
-        /**
-         * Submit image
-         */
-        function onSubmit () {
-            const isOveride = window.confirm('Are you sure you want to overide the image?');
-            document.querySelector('.loading-overlay').classList.remove('hide');
-            const fileInput = document.getElementById('file-input');
-            const files = fileInput.files;
-            const blobArr = [];
-
-            if (files.length > 0) {
-              Array.from(files).forEach(file => {
-                  const reader = new FileReader();
-                  reader.onload = function(e) {
-                  const base64String = e.target.result.split(',')[1];
-                  const name = file.name;
-                  const type = file.type;
-                  blobArr.push({base64String, type});
-                  }
-                  reader.readAsDataURL(file);
-              })
-              setTimeout((() => {
-                  google.script.run.withFailureHandler(onGenerateFailure).withSuccessHandler(onGenerateSuccess).sendToGeminiByBase64(blobArr, isOveride);
-              }), 2000)
-            } 
-            else 
-            {
-                alert('Please select a file');
-                document.querySelector('.loading-overlay').classList.add('hide'); 
-            }
-        }
-
-        /**
-         * Generate failure
-         */
-        function onGenerateFailure() {
-            alert('Failed to submit image');
-            document.querySelector('.loading-overlay').classList.add('hide');
-        }
-
-        /**
-         * Generate success
-         * @param {Array} result 
-         */
-        function onGenerateSuccess(result) {
-          recentTables.push(result);
-          result.forEach(board => {
-              addBoardToScreen(board); 
-          })
-          document.querySelector('.loading-overlay').classList.add('hide'); 
-        }
-    </script>
+      recentTables.push(result);
+      result.forEach(board => {
+        addBoardToScreen(board);
+      });
+      document.querySelector('.loading-overlay').classList.add('hide');
+    }
+  </script>
 </body>
 </html>

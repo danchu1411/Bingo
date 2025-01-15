@@ -107,7 +107,7 @@ function sendToGeminiByBase64(blobArr, isOveride) {
     const json = JSON.parse(response.getContentText());
     const result = extractArraysFromString(JSON.stringify(json.candidates[0].content.parts[0]));
     saveDataToSheet(result, isOveride);
-    return result;
+    return {result, isOveride};
   } catch (error) {
     Logger.log("Error occurred while sending data to Gemini API: " + error.message);
   }
